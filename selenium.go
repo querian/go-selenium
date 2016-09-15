@@ -132,6 +132,9 @@ type WebDriver interface {
 	/* Start a new session, return session id */
 	NewSession() (string, error)
 
+	/* Return the current session ID */
+	GetSessionID() string
+
 	/* Current session capabilities */
 	Capabilities() (Capabilities, error)
 
@@ -261,6 +264,9 @@ type WebDriver interface {
 	// interface to avoid needing to import "testing" (which registers global
 	// command-line flags).
 	T(t TestingT) WebDriverT
+
+	// Raw execution
+	VoidExecute(url string, params interface{}) error
 }
 
 type WebElement interface {

@@ -74,6 +74,10 @@ func (wd *remoteWebDriver) send(method, url string, data []byte) (r *reply, err 
 	return
 }
 
+func (wd *remoteWebDriver) VoidExecute(url string, params interface{}) error {
+	return wd.voidCommand(url, params)
+}
+
 func (wd *remoteWebDriver) execute(method, url string, data []byte) ([]byte, error) {
 	if Log != nil {
 		Log.Printf("-> %s %s [%d bytes]", method, url, len(data))
@@ -285,6 +289,10 @@ func (wd *remoteWebDriver) Capabilities() (v Capabilities, err error) {
 		r.readValue(&v)
 	}
 	return
+}
+
+func (wd *remoteWebDriver) GetSessionID() string {
+	return wd.id
 }
 
 func (wd *remoteWebDriver) SetTimeout(timeoutType string, ms uint) error {

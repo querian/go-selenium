@@ -116,18 +116,38 @@ func (wd *remoteWebDriver) execute(method, url string, data []byte) ([]byte, err
 		Log.Printf("<- %s (%s) [%d bytes]", res.Status, res.Header["Content-Type"], len(buf))
 	}
 
+	pE := func(r *reply) error {
+		sr := &replyValue{}
+		var backendError string
+		err = json.Unmarshal([]byte(r.Value), sr)
+		if err == nil {
+			// can analyze the error
+			if sr.Message != "" {
+				rm := &replyMessage{}
+				err = json.Unmarshal([]byte(sr.Message), rm)
+				if err == nil {
+					backendError = rm.ErrorMessage
+				}
+			}
+		}
+
+		message, ok := errorCodes[r.Status]
+		if !ok {
+			message = fmt.Sprintf("unknown error - %d", r.Status)
+		}
+
+		return fmt.Errorf("%v%v", message, " - "+fmt.Sprintf("%q", backendError))
+	}
+
 	if res.StatusCode >= 400 {
 		reply := new(reply)
 		err := json.Unmarshal(buf, reply)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("Bad server reply status: %s", res.Status))
 		}
-		message, ok := errorCodes[reply.Status]
-		if !ok {
-			message = fmt.Sprintf("unknown error - %d", reply.Status)
-		}
+		errParsed := pE(reply)
 
-		return nil, errors.New(message)
+		return nil, errParsed
 	}
 
 	/* Some bug(?) in Selenium gets us nil values in output, json.Unmarshal is
@@ -141,12 +161,9 @@ func (wd *remoteWebDriver) execute(method, url string, data []byte) ([]byte, err
 		}
 
 		if reply.Status != SUCCESS {
-			message, ok := errorCodes[reply.Status]
-			if !ok {
-				message = fmt.Sprintf("unknown error - %d", reply.Status)
-			}
 
-			return nil, errors.New(message)
+			errParsed := pE(reply)
+			return nil, errParsed
 		}
 		return buf, err
 	}
@@ -177,6 +194,14 @@ type reply struct {
 	SessionId string
 	Status    int
 	Value     json.RawMessage
+}
+
+type replyValue struct {
+	Message string `json:"message"`
+}
+
+type replyMessage struct {
+	ErrorMessage string `json:"errorMessage"`
 }
 
 func (r *reply) readValue(v interface{}) error {

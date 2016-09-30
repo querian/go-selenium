@@ -14,10 +14,12 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"os"
 	"strings"
+	"time"
 )
 
 var Log = log.New(os.Stderr, "[selenium] ", log.Ltime|log.Lmicroseconds)
@@ -187,6 +189,13 @@ var httpClient = http.Client{
 		}
 		return nil
 	},
+	Transport: &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: 30 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: 30 * time.Second,
+	},
+	Timeout: 30 * time.Second,
 }
 
 // Server reply to WebDriver command.
@@ -647,6 +656,10 @@ func (wd *remoteWebDriver) execScript(script string, args []interface{}, suffix 
 	var r *reply
 	if r, err = wd.send("POST", url, data); err == nil {
 		err = r.readValue(&res)
+		if err != nil {
+			return
+		}
+
 	}
 	return
 }

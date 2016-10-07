@@ -195,7 +195,7 @@ var httpClient = http.Client{
 		}).Dial,
 		TLSHandshakeTimeout: 30 * time.Second,
 	},
-	Timeout: 30 * time.Second,
+	Timeout: 60 * time.Second,
 }
 
 // Server reply to WebDriver command.

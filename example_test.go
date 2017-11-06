@@ -3,7 +3,7 @@ package selenium_test
 import (
 	"fmt"
 
-	selenium "github.com/mrsinham/go-selenium"
+	"sourcegraph.com/sourcegraph/go-selenium"
 )
 
 func ExampleFindElement() {

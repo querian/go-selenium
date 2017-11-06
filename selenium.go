@@ -1,6 +1,9 @@
 package selenium
 
-import "io"
+import (
+	"context"
+	"io"
+)
 
 /* Element finding options */
 const (
@@ -123,6 +126,8 @@ type Cookie struct {
 }
 
 type WebDriver interface {
+	SetContext(context.Context)
+
 	/* Status (info) on server */
 	Status() (*Status, error)
 

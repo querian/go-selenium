@@ -2,8 +2,6 @@
 go-selenium - Selenium WebDriver client for Go
 ==============================================
 
-Querian fork of [Sourcegraph go-selenium](https://github.com/sourcegraph/go-selenium).
-
 [![status](https://sourcegraph.com/api/repos/sourcegraph.com/sourcegraph/go-selenium/badges/status.png)](https://sourcegraph.com/sourcegraph/go-selenium)
 
 go-selenium is a [Selenium](http://seleniumhq.org) WebDriver client for [Go](http://golang.org).

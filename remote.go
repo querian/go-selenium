@@ -7,6 +7,7 @@ package selenium
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -55,6 +56,7 @@ const (
 )
 
 type remoteWebDriver struct {
+	ctx          context.Context
 	id, executor string
 	capabilities Capabilities
 	// FIXME
@@ -88,6 +90,8 @@ func (wd *remoteWebDriver) execute(method, url string, data []byte) ([]byte, err
 	if err != nil {
 		return nil, err
 	}
+	req = req.WithContext(wd.ctx)
+
 	req.Header.Add("Accept", jsonMIMEType)
 	if method == "POST" {
 		req.Header.Add("Content-Type", jsonMIMEType)
@@ -227,12 +231,12 @@ type Session struct {
    capabilities - the desired capabilities, see http://goo.gl/SNlAk
    executor - the URL to the Selenim server
 */
-func NewRemote(capabilities Capabilities, executor string) (WebDriver, error) {
+func NewRemote(ctx context.Context, capabilities Capabilities, executor string) (WebDriver, error) {
 	if executor == "" {
 		executor = defaultExecutor
 	}
 
-	wd := &remoteWebDriver{executor: executor, capabilities: capabilities}
+	wd := &remoteWebDriver{ctx: ctx, executor: executor, capabilities: capabilities}
 	// FIXME: Handle profile
 
 	_, err := wd.NewSession()

@@ -61,14 +61,9 @@ type remoteWebDriver struct {
 	capabilities Capabilities
 	// FIXME
 	// profile             BrowserProfile
-	ctx context.Context
 
 	haveQuitMu sync.Mutex
 	haveQuit   bool
-}
-
-func (wd *remoteWebDriver) SetContext(ctx context.Context) {
-	wd.ctx = ctx
 }
 
 func (wd *remoteWebDriver) url(template string, args ...interface{}) string {
@@ -91,22 +86,23 @@ func (wd *remoteWebDriver) VoidExecute(ctx context.Context, url string, params i
 	return wd.voidCommand(ctx, url, params)
 }
 
-// ErrCanceled is returned when the context is cancelled.
-var ErrCanceled = errors.New("cancelled")
-
 func (wd *remoteWebDriver) execute(ctx context.Context, method, url string, data []byte) (buf []byte, err error) {
 	select {
-	case <-wd.ctx.Done():
-		err = ErrCanceled
-		_ = wd.Quit(context.Background())
+	case <-ctx.Done():
+		err = ctx.Err()
+		go func() {
+			_ = wd.Quit(context.Background())
+		}()
 		return
 	default:
 	}
 	defer func() {
 		select {
-		case <-wd.ctx.Done():
-			err = ErrCanceled
-			_ = wd.Quit(context.Background())
+		case <-ctx.Done():
+			err = ctx.Err()
+			go func() {
+				_ = wd.Quit(context.Background())
+			}()
 			return
 		default:
 		}
@@ -130,7 +126,7 @@ func (wd *remoteWebDriver) execute(ctx context.Context, method, url string, data
 		}
 	}
 
-	req = req.WithContext(wd.ctx)
+	req = req.WithContext(ctx)
 
 	res, err := httpClient.Do(req)
 	if err != nil {
@@ -269,7 +265,6 @@ func NewRemote(ctx context.Context, capabilities Capabilities, executor string) 
 	wd := &remoteWebDriver{
 		executor:     executor,
 		capabilities: capabilities,
-		ctx:          context.Background(),
 	}
 	// FIXME: Handle profile
 
@@ -410,10 +405,6 @@ func (wd *remoteWebDriver) Quit(ctx context.Context) (err error) {
 		return nil
 	}
 	wd.haveQuit = true
-	// Quit is the one method which cannot be canceled.
-	// It's also the last thing that happens in a webdriver, so we can
-	// kill the context here.
-	wd.ctx = context.Background()
 
 	if _, err = wd.execute(ctx, "DELETE", wd.url("/session/%s", wd.id), nil); err == nil {
 		wd.id = ""

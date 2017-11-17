@@ -1,6 +1,7 @@
 package selenium
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -16,62 +17,62 @@ import (
 type WebDriverT interface {
 	WebDriver() WebDriver
 
-	NewSession() string
+	NewSession(ctx context.Context) string
 
-	SetTimeout(timeoutType string, ms uint)
-	SetAsyncScriptTimeout(ms uint)
-	SetImplicitWaitTimeout(ms uint)
+	SetTimeout(ctx context.Context, timeoutType string, ms uint)
+	SetAsyncScriptTimeout(ctx context.Context, ms uint)
+	SetImplicitWaitTimeout(ctx context.Context, ms uint)
 
-	Quit()
+	Quit(ctx context.Context)
 
-	CurrentWindowHandle() string
-	WindowHandles() []string
-	CurrentURL() string
-	Title() string
-	PageSource() string
-	Close()
-	SwitchFrame(frame string)
-	SwitchFrameParent()
-	SwitchWindow(name string)
-	CloseWindow(name string)
-	WindowSize(name string) *Size
-	WindowPosition(name string) *Point
-	ResizeWindow(name string, to Size)
+	CurrentWindowHandle(ctx context.Context) string
+	WindowHandles(ctx context.Context) []string
+	CurrentURL(ctx context.Context) string
+	Title(ctx context.Context) string
+	PageSource(ctx context.Context) string
+	Close(ctx context.Context)
+	SwitchFrame(ctx context.Context, frame string)
+	SwitchFrameParent(ctx context.Context)
+	SwitchWindow(ctx context.Context, name string)
+	CloseWindow(ctx context.Context, name string)
+	WindowSize(ctx context.Context, name string) *Size
+	WindowPosition(ctx context.Context, name string) *Point
+	ResizeWindow(ctx context.Context, name string, to Size)
 
-	Get(url string)
-	Forward()
-	Back()
-	Refresh()
+	Get(ctx context.Context, url string)
+	Forward(ctx context.Context)
+	Back(ctx context.Context)
+	Refresh(ctx context.Context)
 
-	FindElement(by, value string) WebElementT
-	FindElements(by, value string) []WebElementT
-	ActiveElement() WebElement
+	FindElement(ctx context.Context, by, value string) WebElementT
+	FindElements(ctx context.Context, by, value string) []WebElementT
+	ActiveElement(ctx context.Context) WebElement
 
 	// Shortcut for FindElement(ByCSSSelector, sel)
-	Q(sel string) WebElementT
+	Q(ctx context.Context, sel string) WebElementT
 	// Shortcut for FindElements(ByCSSSelector, sel)
-	QAll(sel string) []WebElementT
+	QAll(ctx context.Context, sel string) []WebElementT
 
-	GetCookies() []Cookie
-	AddCookie(cookie *Cookie)
-	DeleteAllCookies()
-	DeleteCookie(name string)
+	GetCookies(ctx context.Context) []Cookie
+	AddCookie(ctx context.Context, cookie *Cookie)
+	DeleteAllCookies(ctx context.Context)
+	DeleteCookie(ctx context.Context, name string)
 
-	Click(button int)
-	DoubleClick()
-	ButtonDown()
-	ButtonUp()
+	Click(ctx context.Context, button int)
+	DoubleClick(ctx context.Context)
+	ButtonDown(ctx context.Context)
+	ButtonUp(ctx context.Context)
 
-	SendModifier(modifier string, isDown bool)
-	Screenshot() io.Reader
+	SendModifier(ctx context.Context, modifier string, isDown bool)
+	Screenshot(ctx context.Context) io.Reader
 
-	DismissAlert()
-	AcceptAlert()
-	AlertText() string
-	SetAlertText(text string)
+	DismissAlert(ctx context.Context)
+	AcceptAlert(ctx context.Context)
+	AlertText(ctx context.Context) string
+	SetAlertText(ctx context.Context, text string)
 
-	ExecuteScript(script string, args []interface{}) interface{}
-	ExecuteScriptAsync(script string, args []interface{}) interface{}
+	ExecuteScript(ctx context.Context, script string, args []interface{}) interface{}
+	ExecuteScriptAsync(ctx context.Context, script string, args []interface{}) interface{}
 }
 
 type webDriverT struct {
@@ -83,156 +84,156 @@ func (wt *webDriverT) WebDriver() WebDriver {
 	return wt.d
 }
 
-func (wt *webDriverT) NewSession() (id string) {
+func (wt *webDriverT) NewSession(ctx context.Context) (id string) {
 	var err error
-	if id, err = wt.d.NewSession(); err != nil {
+	if id, err = wt.d.NewSession(ctx); err != nil {
 		fatalf(wt.t, "NewSession: %s", err)
 	}
 	return
 }
 
-func (wt *webDriverT) SetTimeout(timeoutType string, ms uint) {
-	if err := wt.d.SetTimeout(timeoutType, ms); err != nil {
+func (wt *webDriverT) SetTimeout(ctx context.Context, timeoutType string, ms uint) {
+	if err := wt.d.SetTimeout(ctx, timeoutType, ms); err != nil {
 		fatalf(wt.t, "SetTimeout(timeoutType=%q, ms=%d): %s", timeoutType, ms, err)
 	}
 }
 
-func (wt *webDriverT) SetAsyncScriptTimeout(ms uint) {
-	if err := wt.d.SetAsyncScriptTimeout(ms); err != nil {
+func (wt *webDriverT) SetAsyncScriptTimeout(ctx context.Context, ms uint) {
+	if err := wt.d.SetAsyncScriptTimeout(ctx, ms); err != nil {
 		fatalf(wt.t, "SetAsyncScriptTimeout(%d msec): %s", ms, err)
 	}
 }
 
-func (wt *webDriverT) SetImplicitWaitTimeout(ms uint) {
-	if err := wt.d.SetImplicitWaitTimeout(ms); err != nil {
+func (wt *webDriverT) SetImplicitWaitTimeout(ctx context.Context, ms uint) {
+	if err := wt.d.SetImplicitWaitTimeout(ctx, ms); err != nil {
 		fatalf(wt.t, "SetImplicitWaitTimeout(%d msec): %s", ms, err)
 	}
 }
 
-func (wt *webDriverT) Quit() {
-	if err := wt.d.Quit(); err != nil {
+func (wt *webDriverT) Quit(ctx context.Context) {
+	if err := wt.d.Quit(ctx); err != nil {
 		fatalf(wt.t, "Quit: %s", err)
 	}
 }
 
-func (wt *webDriverT) CurrentWindowHandle() (v string) {
+func (wt *webDriverT) CurrentWindowHandle(ctx context.Context) (v string) {
 	var err error
-	if v, err = wt.d.CurrentWindowHandle(); err != nil {
+	if v, err = wt.d.CurrentWindowHandle(ctx); err != nil {
 		fatalf(wt.t, "CurrentWindowHandle: %s", err)
 	}
 	return
 }
 
-func (wt *webDriverT) WindowHandles() (hs []string) {
+func (wt *webDriverT) WindowHandles(ctx context.Context) (hs []string) {
 	var err error
-	if hs, err = wt.d.WindowHandles(); err != nil {
+	if hs, err = wt.d.WindowHandles(ctx); err != nil {
 		fatalf(wt.t, "WindowHandles: %s", err)
 	}
 	return
 }
 
-func (wt *webDriverT) CurrentURL() (v string) {
+func (wt *webDriverT) CurrentURL(ctx context.Context) (v string) {
 	var err error
-	if v, err = wt.d.CurrentURL(); err != nil {
+	if v, err = wt.d.CurrentURL(ctx); err != nil {
 		fatalf(wt.t, "CurrentURL: %s", err)
 	}
 	return
 }
 
-func (wt *webDriverT) Title() (v string) {
+func (wt *webDriverT) Title(ctx context.Context) (v string) {
 	var err error
-	if v, err = wt.d.Title(); err != nil {
+	if v, err = wt.d.Title(ctx); err != nil {
 		fatalf(wt.t, "Title: %s", err)
 	}
 	return
 }
 
-func (wt *webDriverT) PageSource() (v string) {
+func (wt *webDriverT) PageSource(ctx context.Context) (v string) {
 	var err error
-	if v, err = wt.d.PageSource(); err != nil {
+	if v, err = wt.d.PageSource(ctx); err != nil {
 		fatalf(wt.t, "PageSource: %s", err)
 	}
 	return
 }
 
-func (wt *webDriverT) Close() {
-	if err := wt.d.Close(); err != nil {
+func (wt *webDriverT) Close(ctx context.Context) {
+	if err := wt.d.Close(ctx); err != nil {
 		fatalf(wt.t, "Close: %s", err)
 	}
 }
 
-func (wt *webDriverT) SwitchFrame(frame string) {
-	if err := wt.d.SwitchFrame(frame); err != nil {
+func (wt *webDriverT) SwitchFrame(ctx context.Context, frame string) {
+	if err := wt.d.SwitchFrame(ctx, frame); err != nil {
 		fatalf(wt.t, "SwitchFrame(%q): %s", frame, err)
 	}
 }
 
-func (wt *webDriverT) SwitchFrameParent() {
-	if err := wt.d.SwitchFrameParent(); err != nil {
+func (wt *webDriverT) SwitchFrameParent(ctx context.Context) {
+	if err := wt.d.SwitchFrameParent(ctx); err != nil {
 		fatalf(wt.t, "SwitchFrameParent(): %s", err)
 	}
 }
 
-func (wt *webDriverT) SwitchWindow(name string) {
-	if err := wt.d.SwitchWindow(name); err != nil {
+func (wt *webDriverT) SwitchWindow(ctx context.Context, name string) {
+	if err := wt.d.SwitchWindow(ctx, name); err != nil {
 		fatalf(wt.t, "SwitchWindow(%q): %s", name, err)
 	}
 }
 
-func (wt *webDriverT) CloseWindow(name string) {
-	if err := wt.d.CloseWindow(name); err != nil {
+func (wt *webDriverT) CloseWindow(ctx context.Context, name string) {
+	if err := wt.d.CloseWindow(ctx, name); err != nil {
 		fatalf(wt.t, "CloseWindow(%q): %s", name, err)
 	}
 }
 
-func (wt *webDriverT) WindowSize(name string) *Size {
-	sz, err := wt.d.WindowSize(name)
+func (wt *webDriverT) WindowSize(ctx context.Context, name string) *Size {
+	sz, err := wt.d.WindowSize(ctx, name)
 	if err != nil {
 		fatalf(wt.t, "WindowSize(%q): %s", name, err)
 	}
 	return sz
 }
 
-func (wt *webDriverT) WindowPosition(name string) *Point {
-	pt, err := wt.d.WindowPosition(name)
+func (wt *webDriverT) WindowPosition(ctx context.Context, name string) *Point {
+	pt, err := wt.d.WindowPosition(ctx, name)
 	if err != nil {
 		fatalf(wt.t, "WindowPosition(%q): %s", name, err)
 	}
 	return pt
 }
 
-func (wt *webDriverT) ResizeWindow(name string, to Size) {
-	if err := wt.d.ResizeWindow(name, to); err != nil {
+func (wt *webDriverT) ResizeWindow(ctx context.Context, name string, to Size) {
+	if err := wt.d.ResizeWindow(ctx, name, to); err != nil {
 		fatalf(wt.t, "ResizeWindow(%s, %+v): %s", name, to, err)
 	}
 }
 
-func (wt *webDriverT) Get(name string) {
-	if err := wt.d.Get(name); err != nil {
+func (wt *webDriverT) Get(ctx context.Context, name string) {
+	if err := wt.d.Get(ctx, name); err != nil {
 		fatalf(wt.t, "Get(%q): %s", name, err)
 	}
 }
 
-func (wt *webDriverT) Forward() {
-	if err := wt.d.Forward(); err != nil {
+func (wt *webDriverT) Forward(ctx context.Context) {
+	if err := wt.d.Forward(ctx); err != nil {
 		fatalf(wt.t, "Forward: %s", err)
 	}
 }
 
-func (wt *webDriverT) Back() {
-	if err := wt.d.Back(); err != nil {
+func (wt *webDriverT) Back(ctx context.Context) {
+	if err := wt.d.Back(ctx); err != nil {
 		fatalf(wt.t, "Back: %s", err)
 	}
 }
 
-func (wt *webDriverT) Refresh() {
-	if err := wt.d.Refresh(); err != nil {
+func (wt *webDriverT) Refresh(ctx context.Context) {
+	if err := wt.d.Refresh(ctx); err != nil {
 		fatalf(wt.t, "Refresh: %s", err)
 	}
 }
 
-func (wt *webDriverT) FindElement(by, value string) (elem WebElementT) {
-	if elem_, err := wt.d.FindElement(by, value); err == nil {
+func (wt *webDriverT) FindElement(ctx context.Context, by, value string) (elem WebElementT) {
+	if elem_, err := wt.d.FindElement(ctx, by, value); err == nil {
 		elem = elem_.T(wt.t)
 	} else {
 		fatalf(wt.t, "FindElement(by=%q, value=%q): %s", by, value, err)
@@ -240,8 +241,8 @@ func (wt *webDriverT) FindElement(by, value string) (elem WebElementT) {
 	return
 }
 
-func (wt *webDriverT) FindElements(by, value string) (elems []WebElementT) {
-	if elems_, err := wt.d.FindElements(by, value); err == nil {
+func (wt *webDriverT) FindElements(ctx context.Context, by, value string) (elems []WebElementT) {
+	if elems_, err := wt.d.FindElements(ctx, by, value); err == nil {
 		for _, elem := range elems_ {
 			elems = append(elems, elem.T(wt.t))
 		}
@@ -251,125 +252,125 @@ func (wt *webDriverT) FindElements(by, value string) (elems []WebElementT) {
 	return
 }
 
-func (wt *webDriverT) Q(sel string) (elem WebElementT) {
-	return wt.FindElement(ByCSSSelector, sel)
+func (wt *webDriverT) Q(ctx context.Context, sel string) (elem WebElementT) {
+	return wt.FindElement(ctx, ByCSSSelector, sel)
 }
 
-func (wt *webDriverT) QAll(sel string) (elems []WebElementT) {
-	return wt.FindElements(ByCSSSelector, sel)
+func (wt *webDriverT) QAll(ctx context.Context, sel string) (elems []WebElementT) {
+	return wt.FindElements(ctx, ByCSSSelector, sel)
 }
 
-func (wt *webDriverT) ActiveElement() (elem WebElement) {
+func (wt *webDriverT) ActiveElement(ctx context.Context) (elem WebElement) {
 	var err error
-	if elem, err = wt.d.ActiveElement(); err != nil {
+	if elem, err = wt.d.ActiveElement(ctx); err != nil {
 		fatalf(wt.t, "ActiveElement: %s", err)
 	}
 	return
 }
 
-func (wt *webDriverT) GetCookies() (c []Cookie) {
+func (wt *webDriverT) GetCookies(ctx context.Context) (c []Cookie) {
 	var err error
-	if c, err = wt.d.GetCookies(); err != nil {
+	if c, err = wt.d.GetCookies(ctx); err != nil {
 		fatalf(wt.t, "GetCookies: %s", err)
 	}
 	return
 }
 
-func (wt *webDriverT) AddCookie(cookie *Cookie) {
-	if err := wt.d.AddCookie(cookie); err != nil {
+func (wt *webDriverT) AddCookie(ctx context.Context, cookie *Cookie) {
+	if err := wt.d.AddCookie(ctx, cookie); err != nil {
 		fatalf(wt.t, "AddCookie(%+q): %s", cookie, err)
 	}
 	return
 }
 
-func (wt *webDriverT) DeleteAllCookies() {
-	if err := wt.d.DeleteAllCookies(); err != nil {
+func (wt *webDriverT) DeleteAllCookies(ctx context.Context) {
+	if err := wt.d.DeleteAllCookies(ctx); err != nil {
 		fatalf(wt.t, "DeleteAllCookies: %s", err)
 	}
 }
 
-func (wt *webDriverT) DeleteCookie(name string) {
-	if err := wt.d.DeleteCookie(name); err != nil {
+func (wt *webDriverT) DeleteCookie(ctx context.Context, name string) {
+	if err := wt.d.DeleteCookie(ctx, name); err != nil {
 		fatalf(wt.t, "DeleteCookie(%q): %s", name, err)
 	}
 }
 
-func (wt *webDriverT) Click(button int) {
-	if err := wt.d.Click(button); err != nil {
+func (wt *webDriverT) Click(ctx context.Context, button int) {
+	if err := wt.d.Click(ctx, button); err != nil {
 		fatalf(wt.t, "Click(%d): %s", button, err)
 	}
 }
 
-func (wt *webDriverT) DoubleClick() {
-	if err := wt.d.DoubleClick(); err != nil {
+func (wt *webDriverT) DoubleClick(ctx context.Context) {
+	if err := wt.d.DoubleClick(ctx); err != nil {
 		fatalf(wt.t, "DoubleClick: %s", err)
 	}
 }
 
-func (wt *webDriverT) ButtonDown() {
-	if err := wt.d.ButtonDown(); err != nil {
+func (wt *webDriverT) ButtonDown(ctx context.Context) {
+	if err := wt.d.ButtonDown(ctx); err != nil {
 		fatalf(wt.t, "ButtonDown: %s", err)
 	}
 }
 
-func (wt *webDriverT) ButtonUp() {
-	if err := wt.d.ButtonUp(); err != nil {
+func (wt *webDriverT) ButtonUp(ctx context.Context) {
+	if err := wt.d.ButtonUp(ctx); err != nil {
 		fatalf(wt.t, "ButtonUp: %s", err)
 	}
 }
 
-func (wt *webDriverT) SendModifier(modifier string, isDown bool) {
-	if err := wt.d.SendModifier(modifier, isDown); err != nil {
+func (wt *webDriverT) SendModifier(ctx context.Context, modifier string, isDown bool) {
+	if err := wt.d.SendModifier(ctx, modifier, isDown); err != nil {
 		fatalf(wt.t, "SendModifier(modifier=%q, isDown=%s): %s", modifier, isDown, err)
 	}
 }
 
-func (wt *webDriverT) Screenshot() (data io.Reader) {
+func (wt *webDriverT) Screenshot(ctx context.Context) (data io.Reader) {
 	var err error
-	if data, err = wt.d.Screenshot(); err != nil {
+	if data, err = wt.d.Screenshot(ctx); err != nil {
 		fatalf(wt.t, "Screenshot: %s", err)
 	}
 	return
 }
 
-func (wt *webDriverT) DismissAlert() {
-	if err := wt.d.DismissAlert(); err != nil {
+func (wt *webDriverT) DismissAlert(ctx context.Context) {
+	if err := wt.d.DismissAlert(ctx); err != nil {
 		fatalf(wt.t, "DismissAlert: %s", err)
 	}
 }
 
-func (wt *webDriverT) AcceptAlert() {
-	if err := wt.d.AcceptAlert(); err != nil {
+func (wt *webDriverT) AcceptAlert(ctx context.Context) {
+	if err := wt.d.AcceptAlert(ctx); err != nil {
 		fatalf(wt.t, "AcceptAlert: %s", err)
 	}
 }
 
-func (wt *webDriverT) AlertText() (text string) {
+func (wt *webDriverT) AlertText(ctx context.Context) (text string) {
 	var err error
-	if text, err = wt.d.AlertText(); err != nil {
+	if text, err = wt.d.AlertText(ctx); err != nil {
 		fatalf(wt.t, "AlertText: %s", err)
 	}
 	return
 }
 
-func (wt *webDriverT) SetAlertText(text string) {
+func (wt *webDriverT) SetAlertText(ctx context.Context, text string) {
 	var err error
-	if err = wt.d.SetAlertText(text); err != nil {
+	if err = wt.d.SetAlertText(ctx, text); err != nil {
 		fatalf(wt.t, "SetAlertText(%q): %s", text, err)
 	}
 }
 
-func (wt *webDriverT) ExecuteScript(script string, args []interface{}) (res interface{}) {
+func (wt *webDriverT) ExecuteScript(ctx context.Context, script string, args []interface{}) (res interface{}) {
 	var err error
-	if res, err = wt.d.ExecuteScript(script, args); err != nil {
+	if res, err = wt.d.ExecuteScript(ctx, script, args); err != nil {
 		fatalf(wt.t, "ExecuteScript(script=%q, args=%+q): %s", script, args, err)
 	}
 	return
 }
 
-func (wt *webDriverT) ExecuteScriptAsync(script string, args []interface{}) (res interface{}) {
+func (wt *webDriverT) ExecuteScriptAsync(ctx context.Context, script string, args []interface{}) (res interface{}) {
 	var err error
-	if res, err = wt.d.ExecuteScriptAsync(script, args); err != nil {
+	if res, err = wt.d.ExecuteScriptAsync(ctx, script, args); err != nil {
 		fatalf(wt.t, "ExecuteScriptAsync(script=%q, args=%+q): %s", script, args, err)
 	}
 	return
@@ -382,30 +383,30 @@ func (wt *webDriverT) ExecuteScriptAsync(script string, args []interface{}) (res
 type WebElementT interface {
 	WebElement() WebElement
 
-	Click()
-	SendKeys(keys string)
-	Submit()
-	Clear()
-	MoveTo(xOffset, yOffset int)
+	Click(ctx context.Context)
+	SendKeys(ctx context.Context, keys string)
+	Submit(ctx context.Context)
+	Clear(ctx context.Context)
+	MoveTo(ctx context.Context, xOffset, yOffset int)
 
-	FindElement(by, value string) WebElementT
-	FindElements(by, value string) []WebElementT
+	FindElement(ctx context.Context, by, value string) WebElementT
+	FindElements(ctx context.Context, by, value string) []WebElementT
 
 	// Shortcut for FindElement(ByCSSSelector, sel)
-	Q(sel string) WebElementT
+	Q(ctx context.Context, sel string) WebElementT
 	// Shortcut for FindElements(ByCSSSelector, sel)
-	QAll(sel string) []WebElementT
+	QAll(ctx context.Context, sel string) []WebElementT
 
-	TagName() string
-	Text() string
-	IsSelected() bool
-	IsEnabled() bool
-	IsDisplayed() bool
-	GetAttribute(name string) string
-	Location() *Point
-	LocationInView() *Point
-	Size() *Size
-	CSSProperty(name string) string
+	TagName(ctx context.Context) string
+	Text(ctx context.Context) string
+	IsSelected(ctx context.Context) bool
+	IsEnabled(ctx context.Context) bool
+	IsDisplayed(ctx context.Context) bool
+	GetAttribute(ctx context.Context, name string) string
+	Location(ctx context.Context) *Point
+	LocationInView(ctx context.Context) *Point
+	Size(ctx context.Context) *Size
+	CSSProperty(ctx context.Context, name string) string
 }
 
 type webElementT struct {
@@ -417,38 +418,38 @@ func (wt *webElementT) WebElement() WebElement {
 	return wt.e
 }
 
-func (wt *webElementT) Click() {
-	if err := wt.e.Click(); err != nil {
+func (wt *webElementT) Click(ctx context.Context) {
+	if err := wt.e.Click(ctx); err != nil {
 		fatalf(wt.t, "Click: %s", err)
 	}
 }
 
-func (wt *webElementT) SendKeys(keys string) {
-	if err := wt.e.SendKeys(keys); err != nil {
+func (wt *webElementT) SendKeys(ctx context.Context, keys string) {
+	if err := wt.e.SendKeys(ctx, keys); err != nil {
 		fatalf(wt.t, "SendKeys(%q): %s", keys, err)
 	}
 }
 
-func (wt *webElementT) Submit() {
-	if err := wt.e.Submit(); err != nil {
+func (wt *webElementT) Submit(ctx context.Context) {
+	if err := wt.e.Submit(ctx); err != nil {
 		fatalf(wt.t, "Submit: %s", err)
 	}
 }
 
-func (wt *webElementT) Clear() {
-	if err := wt.e.Clear(); err != nil {
+func (wt *webElementT) Clear(ctx context.Context) {
+	if err := wt.e.Clear(ctx); err != nil {
 		fatalf(wt.t, "Clear: %s", err)
 	}
 }
 
-func (wt *webElementT) MoveTo(xOffset, yOffset int) {
-	if err := wt.e.MoveTo(xOffset, yOffset); err != nil {
+func (wt *webElementT) MoveTo(ctx context.Context, xOffset, yOffset int) {
+	if err := wt.e.MoveTo(ctx, xOffset, yOffset); err != nil {
 		fatalf(wt.t, "MoveTo(xOffset=%d, yOffset=%d): %s", xOffset, yOffset, err)
 	}
 }
 
-func (wt *webElementT) FindElement(by, value string) WebElementT {
-	if elem, err := wt.e.FindElement(by, value); err == nil {
+func (wt *webElementT) FindElement(ctx context.Context, by, value string) WebElementT {
+	if elem, err := wt.e.FindElement(ctx, by, value); err == nil {
 		return elem.T(wt.t)
 	} else {
 		fatalf(wt.t, "FindElement(by=%q, value=%q): %s", by, value, err)
@@ -456,8 +457,8 @@ func (wt *webElementT) FindElement(by, value string) WebElementT {
 	}
 }
 
-func (wt *webElementT) FindElements(by, value string) []WebElementT {
-	if elems, err := wt.e.FindElements(by, value); err == nil {
+func (wt *webElementT) FindElements(ctx context.Context, by, value string) []WebElementT {
+	if elems, err := wt.e.FindElements(ctx, by, value); err == nil {
 		elemsT := make([]WebElementT, len(elems))
 		for i, elem := range elems {
 			elemsT[i] = elem.T(wt.t)
@@ -469,89 +470,89 @@ func (wt *webElementT) FindElements(by, value string) []WebElementT {
 	}
 }
 
-func (wt *webElementT) Q(sel string) (elem WebElementT) {
-	return wt.FindElement(ByCSSSelector, sel)
+func (wt *webElementT) Q(ctx context.Context, sel string) (elem WebElementT) {
+	return wt.FindElement(ctx, ByCSSSelector, sel)
 }
 
-func (wt *webElementT) QAll(sel string) (elems []WebElementT) {
-	return wt.FindElements(ByCSSSelector, sel)
+func (wt *webElementT) QAll(ctx context.Context, sel string) (elems []WebElementT) {
+	return wt.FindElements(ctx, ByCSSSelector, sel)
 }
 
-func (wt *webElementT) TagName() (v string) {
+func (wt *webElementT) TagName(ctx context.Context) (v string) {
 	var err error
-	if v, err = wt.e.TagName(); err != nil {
+	if v, err = wt.e.TagName(ctx); err != nil {
 		fatalf(wt.t, "TagName: %s", err)
 	}
 	return
 }
 
-func (wt *webElementT) Text() (v string) {
+func (wt *webElementT) Text(ctx context.Context) (v string) {
 	var err error
-	if v, err = wt.e.Text(); err != nil {
+	if v, err = wt.e.Text(ctx); err != nil {
 		fatalf(wt.t, "Text: %s", err)
 	}
 	return
 }
 
-func (wt *webElementT) IsSelected() (v bool) {
+func (wt *webElementT) IsSelected(ctx context.Context) (v bool) {
 	var err error
-	if v, err = wt.e.IsSelected(); err != nil {
+	if v, err = wt.e.IsSelected(ctx); err != nil {
 		fatalf(wt.t, "IsSelected: %s", err)
 	}
 	return
 }
 
-func (wt *webElementT) IsEnabled() (v bool) {
+func (wt *webElementT) IsEnabled(ctx context.Context) (v bool) {
 	var err error
-	if v, err = wt.e.IsEnabled(); err != nil {
+	if v, err = wt.e.IsEnabled(ctx); err != nil {
 		fatalf(wt.t, "IsEnabled: %s", err)
 	}
 	return
 }
 
-func (wt *webElementT) IsDisplayed() (v bool) {
+func (wt *webElementT) IsDisplayed(ctx context.Context) (v bool) {
 	var err error
-	if v, err = wt.e.IsDisplayed(); err != nil {
+	if v, err = wt.e.IsDisplayed(ctx); err != nil {
 		fatalf(wt.t, "IsDisplayed: %s", err)
 	}
 	return
 }
 
-func (wt *webElementT) GetAttribute(name string) (v string) {
+func (wt *webElementT) GetAttribute(ctx context.Context, name string) (v string) {
 	var err error
-	if v, err = wt.e.GetAttribute(name); err != nil {
+	if v, err = wt.e.GetAttribute(ctx, name); err != nil {
 		fatalf(wt.t, "GetAttribute(%q): %s", name, err)
 	}
 	return
 }
 
-func (wt *webElementT) Location() (v *Point) {
+func (wt *webElementT) Location(ctx context.Context) (v *Point) {
 	var err error
-	if v, err = wt.e.Location(); err != nil {
+	if v, err = wt.e.Location(ctx); err != nil {
 		fatalf(wt.t, "Location: %s", err)
 	}
 	return
 }
 
-func (wt *webElementT) LocationInView() (v *Point) {
+func (wt *webElementT) LocationInView(ctx context.Context) (v *Point) {
 	var err error
-	if v, err = wt.e.LocationInView(); err != nil {
+	if v, err = wt.e.LocationInView(ctx); err != nil {
 		fatalf(wt.t, "LocationInView: %s", err)
 	}
 	return
 }
 
-func (wt *webElementT) Size() (v *Size) {
+func (wt *webElementT) Size(ctx context.Context) (v *Size) {
 	var err error
-	if v, err = wt.e.Size(); err != nil {
+	if v, err = wt.e.Size(ctx); err != nil {
 		fatalf(wt.t, "Size: %s", err)
 	}
 	return
 }
 
-func (wt *webElementT) CSSProperty(name string) (v string) {
+func (wt *webElementT) CSSProperty(ctx context.Context, name string) (v string) {
 	var err error
-	if v, err = wt.e.CSSProperty(name); err != nil {
+	if v, err = wt.e.CSSProperty(ctx, name); err != nil {
 		fatalf(wt.t, "CSSProperty(%q): %s", name, err)
 	}
 	return

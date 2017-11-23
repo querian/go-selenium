@@ -126,142 +126,141 @@ type Cookie struct {
 }
 
 type WebDriver interface {
-	SetContext(context.Context)
 
 	/* Status (info) on server */
-	Status() (*Status, error)
+	Status(ctx context.Context) (*Status, error)
 
 	/* List of actions on the server. */
-	Sessions() ([]Session, error)
+	Sessions(ctx context.Context) ([]Session, error)
 
 	/* Start a new session, return session id */
-	NewSession() (string, error)
+	NewSession(ctx context.Context) (string, error)
 
 	/* Return the current session ID */
 	GetSessionID() string
 
 	/* Current session capabilities */
-	Capabilities() (Capabilities, error)
+	Capabilities(ctx context.Context) (Capabilities, error)
 
 	/* Configure the amount of time a particular type of operation can execute for before it is aborted.
 	   Valid types: "script" for script timeouts, "implicit" for modifying the implicit wait timeout and "page load" for setting a page load timeout. */
-	SetTimeout(timeoutType string, ms uint) error
+	SetTimeout(ctx context.Context, timeoutType string, ms uint) error
 	/* Set the amount of time, in milliseconds, that asynchronous scripts are permitted to run before they are aborted. */
-	SetAsyncScriptTimeout(ms uint) error
+	SetAsyncScriptTimeout(ctx context.Context, ms uint) error
 	/* Set the amount of time, in milliseconds, the driver should wait when searching for elements. */
-	SetImplicitWaitTimeout(ms uint) error
+	SetImplicitWaitTimeout(ctx context.Context, ms uint) error
 
 	// IME
 	/* List all available engines on the machine. */
-	AvailableEngines() ([]string, error)
+	AvailableEngines(ctx context.Context) ([]string, error)
 	/* Get the name of the active IME engine. */
-	ActiveEngine() (string, error)
+	ActiveEngine(ctx context.Context) (string, error)
 	/* Indicates whether IME input is active at the moment. */
-	IsEngineActivated() (bool, error)
+	IsEngineActivated(ctx context.Context) (bool, error)
 	/* De-activates the currently-active IME engine. */
-	DeactivateEngine() error
+	DeactivateEngine(ctx context.Context) error
 	/* Make an engines active */
-	ActivateEngine(engine string) error
+	ActivateEngine(ctx context.Context, engine string) error
 
 	/* Quit (end) current session */
-	Quit() error
+	Quit(ctx context.Context) error
 
 	// Page information and manipulation
 	/* Return id of current window handle. */
-	CurrentWindowHandle() (string, error)
+	CurrentWindowHandle(ctx context.Context) (string, error)
 	/* Return ids of current open windows. */
-	WindowHandles() ([]string, error)
+	WindowHandles(ctx context.Context) ([]string, error)
 	/* Current url. */
-	CurrentURL() (string, error)
+	CurrentURL(ctx context.Context) (string, error)
 	/* Page title. */
-	Title() (string, error)
+	Title(ctx context.Context) (string, error)
 	/* Get page source. */
-	PageSource() (string, error)
+	PageSource(ctx context.Context) (string, error)
 	/* Close current window. */
-	Close() error
+	Close(ctx context.Context) error
 	/* Switch to frame, frame parameter can be name or id. */
-	SwitchFrame(frame string) error
+	SwitchFrame(ctx context.Context, frame string) error
 	/* Switch to parent frame */
-	SwitchFrameParent() error
+	SwitchFrameParent(ctx context.Context) error
 	/* Swtich to window. */
-	SwitchWindow(name string) error
+	SwitchWindow(ctx context.Context, name string) error
 	/* Close window. */
-	CloseWindow(name string) error
+	CloseWindow(ctx context.Context, name string) error
 	/* Get window size */
-	WindowSize(name string) (*Size, error)
+	WindowSize(ctx context.Context, name string) (*Size, error)
 	/* Get window position */
-	WindowPosition(name string) (*Point, error)
+	WindowPosition(ctx context.Context, name string) (*Point, error)
 
 	// ResizeWindow resizes the named window.
-	ResizeWindow(name string, to Size) error
+	ResizeWindow(ctx context.Context, name string, to Size) error
 
 	// Navigation
 	/* Open url. */
-	Get(url string) error
+	Get(ctx context.Context, url string) error
 	/* Move forward in history. */
-	Forward() error
+	Forward(ctx context.Context) error
 	/* Move backward in history. */
-	Back() error
+	Back(ctx context.Context) error
 	/* Refresh page. */
-	Refresh() error
+	Refresh(ctx context.Context) error
 
 	// Finding element(s)
 	/* Find, return one element. */
-	FindElement(by, value string) (WebElement, error)
+	FindElement(ctx context.Context, by, value string) (WebElement, error)
 	/* Find, return list of elements. */
-	FindElements(by, value string) ([]WebElement, error)
+	FindElements(ctx context.Context, by, value string) ([]WebElement, error)
 	/* Current active element. */
-	ActiveElement() (WebElement, error)
+	ActiveElement(ctx context.Context) (WebElement, error)
 
 	// Shortcut for FindElement(ByCSSSelector, sel)
-	Q(sel string) (WebElement, error)
+	Q(ctx context.Context, sel string) (WebElement, error)
 	// Shortcut for FindElements(ByCSSSelector, sel)
-	QAll(sel string) ([]WebElement, error)
+	QAll(ctx context.Context, sel string) ([]WebElement, error)
 
 	// Cookies
 	/* Get all cookies */
-	GetCookies() ([]Cookie, error)
+	GetCookies(ctx context.Context) ([]Cookie, error)
 	/* Add a cookie */
-	AddCookie(cookie *Cookie) error
+	AddCookie(ctx context.Context, cookie *Cookie) error
 	/* Delete all cookies */
-	DeleteAllCookies() error
+	DeleteAllCookies(ctx context.Context) error
 	/* Delete a cookie */
-	DeleteCookie(name string) error
+	DeleteCookie(ctx context.Context, name string) error
 
 	// Mouse
 	/* Click mouse button, button should be on of RightButton, MiddleButton or
 	LeftButton.
 	*/
-	Click(button int) error
+	Click(ctx context.Context, button int) error
 	/* Dobule click */
-	DoubleClick() error
+	DoubleClick(ctx context.Context) error
 	/* Mouse button down */
-	ButtonDown() error
+	ButtonDown(ctx context.Context) error
 	/* Mouse button up */
-	ButtonUp() error
+	ButtonUp(ctx context.Context) error
 
 	// Misc
 	/* Send modifier key to active element.
 	modifier can be one of ShiftKey, ControlKey, AltKey, MetaKey.
 	*/
-	SendModifier(modifier string, isDown bool) error
-	Screenshot() (io.Reader, error)
+	SendModifier(ctx context.Context, modifier string, isDown bool) error
+	Screenshot(ctx context.Context) (io.Reader, error)
 
 	// Alerts
 	/* Dismiss current alert. */
-	DismissAlert() error
+	DismissAlert(ctx context.Context) error
 	/* Accept current alert. */
-	AcceptAlert() error
+	AcceptAlert(ctx context.Context) error
 	/* Current alert text. */
-	AlertText() (string, error)
+	AlertText(ctx context.Context) (string, error)
 	/* Set current alert text. */
-	SetAlertText(text string) error
+	SetAlertText(ctx context.Context, text string) error
 
 	// Scripts
 	/* Execute a script. */
-	ExecuteScript(script string, args []interface{}) (interface{}, error)
+	ExecuteScript(ctx context.Context, script string, args []interface{}) (interface{}, error)
 	/* Execute a script async. */
-	ExecuteScriptAsync(script string, args []interface{}) (interface{}, error)
+	ExecuteScriptAsync(ctx context.Context, script string, args []interface{}) (interface{}, error)
 
 	// Get a WebDriverT of this element that has methods that call t.Fatalf upon
 	// encountering errors instead of using multiple returns to indicate errors.
@@ -271,58 +270,58 @@ type WebDriver interface {
 	T(t TestingT) WebDriverT
 
 	// Raw execution
-	VoidExecute(url string, params interface{}) error
+	VoidExecute(ctx context.Context, url string, params interface{}) error
 }
 
 type WebElement interface {
 	// Manipulation
 
 	/* Click on element */
-	Click() error
+	Click(ctx context.Context) error
 	/* Send keys (type) into element */
-	SendKeys(keys string) error
+	SendKeys(ctx context.Context, keys string) error
 	/* Submit */
-	Submit() error
+	Submit(ctx context.Context) error
 	/* Clear */
-	Clear() error
+	Clear(ctx context.Context) error
 	/* Move mouse to relative coordinates */
-	MoveTo(xOffset, yOffset int) error
+	MoveTo(ctx context.Context, xOffset, yOffset int) error
 
 	// Finding
 
 	/* Find children, return one element. */
-	FindElement(by, value string) (WebElement, error)
+	FindElement(ctx context.Context, by, value string) (WebElement, error)
 	/* Find children, return list of elements. */
-	FindElements(by, value string) ([]WebElement, error)
+	FindElements(ctx context.Context, by, value string) ([]WebElement, error)
 
 	// Shortcut for FindElement(ByCSSSelector, sel)
-	Q(sel string) (WebElement, error)
+	Q(ctx context.Context, sel string) (WebElement, error)
 	// Shortcut for FindElements(ByCSSSelector, sel)
-	QAll(sel string) ([]WebElement, error)
+	QAll(ctx context.Context, sel string) ([]WebElement, error)
 
 	// Porperties
 
 	/* Element name */
-	TagName() (string, error)
+	TagName(ctx context.Context) (string, error)
 	/* Text of element */
-	Text() (string, error)
+	Text(ctx context.Context) (string, error)
 	/* Check if element is selected. */
-	IsSelected() (bool, error)
+	IsSelected(ctx context.Context) (bool, error)
 	/* Check if element is enabled. */
-	IsEnabled() (bool, error)
+	IsEnabled(ctx context.Context) (bool, error)
 	/* Check if element is displayed. */
-	IsDisplayed() (bool, error)
+	IsDisplayed(ctx context.Context) (bool, error)
 	/* Get element attribute. */
-	GetAttribute(name string) (string, error)
+	GetAttribute(ctx context.Context, name string) (string, error)
 	/* Element location. */
-	Location() (*Point, error)
+	Location(ctx context.Context) (*Point, error)
 	/* Element location once it has been scrolled into view.
 	   Note: This is considered an internal command and should only be used to determine an element's location for correctly generating native events.*/
-	LocationInView() (*Point, error)
+	LocationInView(ctx context.Context) (*Point, error)
 	/* Element size */
-	Size() (*Size, error)
+	Size(ctx context.Context) (*Size, error)
 	/* Get element CSS property value. */
-	CSSProperty(name string) (string, error)
+	CSSProperty(ctx context.Context, name string) (string, error)
 
 	// Get a WebElementT of this element that has methods that call t.Fatalf
 	// upon encountering errors instead of using multiple returns to indicate

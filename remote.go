@@ -87,26 +87,6 @@ func (wd *remoteWebDriver) VoidExecute(ctx context.Context, url string, params i
 }
 
 func (wd *remoteWebDriver) execute(ctx context.Context, method, url string, data []byte) (buf []byte, err error) {
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-		go func() {
-			_ = wd.Quit(context.Background())
-		}()
-		return
-	default:
-	}
-	defer func() {
-		select {
-		case <-ctx.Done():
-			err = ctx.Err()
-			go func() {
-				_ = wd.Quit(context.Background())
-			}()
-			return
-		default:
-		}
-	}()
 
 	if Log != nil {
 		Log.Printf("-> %s %s [%d bytes]", method, url, len(data))
